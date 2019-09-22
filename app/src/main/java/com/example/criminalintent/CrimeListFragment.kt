@@ -1,9 +1,11 @@
 package com.example.criminalintent
 
 import android.os.Bundle
+import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -37,8 +39,10 @@ class CrimeListFragment: Fragment() {
         fun bindItems(crime: Crime){
             val crimeTitleView = itemView.findViewById<TextView>(R.id.crime_title)
             val crimeDateView = itemView.findViewById<TextView>(R.id.crime_date)
+            val crimeSolvedView = itemView.findViewById<ImageView>(R.id.crime_solved)
             crimeTitleView.text = crime.title
-            crimeDateView.text = crime.date.toString()
+            crimeDateView.text = DateFormat.format("EEEE, MMM dd, yyyy", crime.date)
+            crimeSolvedView.visibility = if (crime.solved) View.VISIBLE else View.GONE
         }
     }
 
