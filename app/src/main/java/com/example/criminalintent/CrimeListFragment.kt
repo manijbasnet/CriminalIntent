@@ -54,7 +54,7 @@ class CrimeListFragment: Fragment() {
             crimeSolvedView.visibility = if (crime.solved) View.VISIBLE else View.GONE
 
             itemView.setOnClickListener {
-                val intent = CrimeActivity.newIntent(itemView.context, crime.id)
+                val intent = CrimePagerActivity.newIntent(itemView.context, crime.id)
                 itemView.context.startActivity(intent)
             }
         }

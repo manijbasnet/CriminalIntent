@@ -48,7 +48,6 @@ class CrimeFragment: Fragment() {
         mTitleField.setText(mCrime.title)
         mTitleField.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -56,7 +55,6 @@ class CrimeFragment: Fragment() {
             }
 
             override fun afterTextChanged(s: Editable?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             }
         })
 
