@@ -13,7 +13,8 @@ import androidx.recyclerview.widget.RecyclerView
 
 class CrimeListFragment: Fragment() {
 
-    lateinit var mCrimeRecyclerView: RecyclerView
+    private lateinit var mCrimeRecyclerView: RecyclerView
+    private lateinit var mAdapter: RecyclerView.Adapter<CrimeHolder>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -25,17 +26,25 @@ class CrimeListFragment: Fragment() {
         mCrimeRecyclerView = view.findViewById(R.id.crime_recycler_view)
         mCrimeRecyclerView.layoutManager = LinearLayoutManager(activity)
 
+        mAdapter = CrimeAdapter(CrimeLab.mCrimes)
+        mCrimeRecyclerView.adapter = mAdapter
+
         updateUI()
 
         return view
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateUI()
+    }
+
     private fun updateUI(){
-        val adapter = CrimeAdapter(Crimelab.mCrimes)
-        mCrimeRecyclerView.adapter = adapter
+        mAdapter.notifyDataSetChanged()
     }
 
     private class CrimeHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
         fun bindItems(crime: Crime){
             val crimeTitleView = itemView.findViewById<TextView>(R.id.crime_title)
             val crimeDateView = itemView.findViewById<TextView>(R.id.crime_date)
@@ -43,6 +52,11 @@ class CrimeListFragment: Fragment() {
             crimeTitleView.text = crime.title
             crimeDateView.text = DateFormat.format("EEEE, MMM dd, yyyy", crime.date)
             crimeSolvedView.visibility = if (crime.solved) View.VISIBLE else View.GONE
+
+            itemView.setOnClickListener {
+                val intent = CrimeActivity.newIntent(itemView.context, crime.id)
+                itemView.context.startActivity(intent)
+            }
         }
     }
 

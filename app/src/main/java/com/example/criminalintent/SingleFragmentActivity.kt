@@ -15,8 +15,6 @@ abstract class SingleFragmentActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_fragment)
 
-        Log.e(null, "dadasda")
-
         var fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
         if(fragment == null){
             fragment = createFragment()

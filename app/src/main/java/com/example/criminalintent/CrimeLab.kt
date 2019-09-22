@@ -3,7 +3,7 @@ package com.example.criminalintent
 import java.util.*
 import kotlin.collections.ArrayList
 
-object Crimelab {
+object CrimeLab {
 
     val mCrimes: ArrayList<Crime> = ArrayList()
 
