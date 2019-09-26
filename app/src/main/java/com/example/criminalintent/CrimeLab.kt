@@ -10,7 +10,7 @@ object CrimeLab {
     init {
         for (i in 1..100){
             val crime = Crime()
-            crime.title = ("Crime #" + i)
+            crime.title = "Crime # $i"
             crime.solved = i % 2 == 0
             mCrimes.add(crime)
         }
