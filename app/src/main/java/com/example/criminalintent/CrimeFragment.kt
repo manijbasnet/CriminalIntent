@@ -21,12 +21,15 @@ class CrimeFragment : Fragment() {
     private lateinit var mCrime: Crime
     private lateinit var mTitleField: EditText
     private lateinit var mDateButton: Button
+    private lateinit var mTimeButton: Button
     private lateinit var mSolvedCheckBox: CheckBox
 
     companion object {
         const val ARG_CRIME_ID = "crime_id"
         const val DIALOG_DATE = "DialogDate"
+        const val DIALOG_TIME = "DialogTime"
         const val REQUEST_DATE = 0
+        const val REQUEST_TIME = 1
         fun newInstance(crimeId: UUID): CrimeFragment {
             val args = Bundle()
             args.putSerializable(ARG_CRIME_ID, crimeId)
@@ -77,11 +80,25 @@ class CrimeFragment : Fragment() {
             mCrime.solved = isChecked
         }
 
+
+        mTimeButton = v.findViewById<Button>(R.id.crime_time)
+        updateTime()
+        mTimeButton.setOnClickListener {
+            var timeFragment = TimePickerFragment.newInstance(mCrime.date)
+            timeFragment.setTargetFragment(this, REQUEST_TIME)
+            timeFragment.show(fragmentManager!!,  DIALOG_TIME)
+        }
+
+
         return v
     }
 
     private fun updateDate(){
         mDateButton.text = DateFormat.format("EEEE, MMM dd, yyyy", mCrime.date)
+    }
+
+    private fun updateTime(){
+        mTimeButton.text = DateFormat.format("hh:mm:ss a", mCrime.date)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -93,6 +110,12 @@ class CrimeFragment : Fragment() {
             val date = data!!.getSerializableExtra(DatePickerFragment.EXTRA_DATE) as Date
             mCrime.date = date
             updateDate()
+        }
+
+        if(requestCode == REQUEST_TIME) {
+            val date = data!!.getSerializableExtra(TimePickerFragment.EXTRA_TIME) as Date
+            mCrime.date = date
+            updateTime()
         }
     }
 
