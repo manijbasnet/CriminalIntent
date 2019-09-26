@@ -1,5 +1,7 @@
 package com.example.criminalintent
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -10,18 +12,21 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import java.util.*
 
-class CrimeFragment: Fragment() {
+class CrimeFragment : Fragment() {
 
     private lateinit var mCrime: Crime
     private lateinit var mTitleField: EditText
     private lateinit var mDateButton: Button
     private lateinit var mSolvedCheckBox: CheckBox
 
-    companion object{
+    companion object {
         const val ARG_CRIME_ID = "crime_id"
+        const val DIALOG_DATE = "DialogDate"
+        const val REQUEST_DATE = 0
         fun newInstance(crimeId: UUID): CrimeFragment {
             val args = Bundle()
             args.putSerializable(ARG_CRIME_ID, crimeId)
@@ -59,8 +64,12 @@ class CrimeFragment: Fragment() {
         })
 
         mDateButton = v.findViewById(R.id.crime_date)
-        mDateButton.text = DateFormat.format("EEEE, MMM dd, yyyy", mCrime.date)
-        mDateButton.isEnabled = false
+        updateDate()
+        mDateButton.setOnClickListener {
+            var dialogFragment = DatePickerFragment.newInstance(mCrime.date)
+            dialogFragment.setTargetFragment(this, REQUEST_DATE)
+            dialogFragment.show(fragmentManager!!, DIALOG_DATE)
+        }
 
         mSolvedCheckBox = v.findViewById(R.id.crime_solved)
         mSolvedCheckBox.isChecked = mCrime.solved
@@ -69,6 +78,22 @@ class CrimeFragment: Fragment() {
         }
 
         return v
+    }
+
+    private fun updateDate(){
+        mDateButton.text = DateFormat.format("EEEE, MMM dd, yyyy", mCrime.date)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (resultCode != Activity.RESULT_OK) {
+            return
+        }
+
+        if (requestCode == REQUEST_DATE) {
+            val date = data!!.getSerializableExtra(DatePickerFragment.EXTRA_DATE) as Date
+            mCrime.date = date
+            updateDate()
+        }
     }
 
 }
