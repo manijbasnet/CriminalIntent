@@ -7,13 +7,8 @@ object CrimeLab {
 
     val mCrimes: ArrayList<Crime> = ArrayList()
 
-    init {
-        for (i in 1..100){
-            val crime = Crime()
-            crime.title = "Crime # $i"
-            crime.solved = i % 2 == 0
-            mCrimes.add(crime)
-        }
+    fun addCrime(c: Crime) {
+        mCrimes.add(c)
     }
 
     fun getCrime (id: UUID) : Crime? {
