@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 
 class CrimeListFragment: Fragment() {
 
+    private lateinit var mEmptyCrimesTextView: TextView
     private lateinit var mCrimeRecyclerView: RecyclerView
     private lateinit var mAdapter: RecyclerView.Adapter<CrimeHolder>
     private var mSubtitleVisible: Boolean = true
@@ -28,13 +29,15 @@ class CrimeListFragment: Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_crime_list, container, false)
 
+        mEmptyCrimesTextView = view.findViewById(R.id.empty_text_view)
+
         mCrimeRecyclerView = view.findViewById(R.id.crime_recycler_view)
         mCrimeRecyclerView.layoutManager = LinearLayoutManager(activity)
 
         mAdapter = CrimeAdapter(CrimeLab.mCrimes)
         mCrimeRecyclerView.adapter = mAdapter
 
-            if(savedInstanceState != null){
+        if(savedInstanceState != null){
             mSubtitleVisible = savedInstanceState.getBoolean(SAVED_SUBTITLE_VISIBLE)
         }
 
@@ -84,10 +87,17 @@ class CrimeListFragment: Fragment() {
     private fun updateUI(){
         mAdapter.notifyDataSetChanged()
         updateSubtitle()
+        if(CrimeLab.mCrimes.any()) {
+            mEmptyCrimesTextView.visibility = View.GONE
+            mCrimeRecyclerView.visibility = View.VISIBLE
+        } else {
+            mEmptyCrimesTextView.visibility = View.VISIBLE
+            mCrimeRecyclerView.visibility = View.GONE
+        }
     }
 
     private fun updateSubtitle(){
-        val subtitle = if (mSubtitleVisible) getString(R.string.subtitle_format, CrimeLab.mCrimes.size) else null
+        val subtitle = if (mSubtitleVisible) resources.getQuantityString(R.plurals.subtitle_plural, CrimeLab.mCrimes.size, CrimeLab.mCrimes.size) else null
         val activity = activity as CrimeListActivity
         activity.supportActionBar!!.subtitle = subtitle
     }

@@ -6,9 +6,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateFormat
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -43,6 +41,7 @@ class CrimeFragment : Fragment() {
         super.onCreate(savedInstanceState)
         val crimeId = arguments?.getSerializable(ARG_CRIME_ID) as UUID
         mCrime = CrimeLab.getCrime(crimeId) as Crime
+        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(
@@ -69,7 +68,7 @@ class CrimeFragment : Fragment() {
         mDateButton = v.findViewById(R.id.crime_date)
         updateDate()
         mDateButton.setOnClickListener {
-            var dialogFragment = DatePickerFragment.newInstance(mCrime.date)
+            val dialogFragment = DatePickerFragment.newInstance(mCrime.date)
             dialogFragment.setTargetFragment(this, REQUEST_DATE)
             dialogFragment.show(fragmentManager!!, DIALOG_DATE)
         }
@@ -81,16 +80,31 @@ class CrimeFragment : Fragment() {
         }
 
 
-        mTimeButton = v.findViewById<Button>(R.id.crime_time)
+        mTimeButton = v.findViewById(R.id.crime_time)
         updateTime()
         mTimeButton.setOnClickListener {
-            var timeFragment = TimePickerFragment.newInstance(mCrime.date)
+            val timeFragment = TimePickerFragment.newInstance(mCrime.date)
             timeFragment.setTargetFragment(this, REQUEST_TIME)
             timeFragment.show(fragmentManager!!,  DIALOG_TIME)
         }
 
-
         return v
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.fragment_crime, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when(item.itemId){
+          R.id.delete_crime -> {
+              CrimeLab.mCrimes.remove(mCrime)
+              activity!!.finish()
+              true
+          }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun updateDate(){
