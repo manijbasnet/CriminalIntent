@@ -6,16 +6,21 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class CrimeListFragment: Fragment() {
 
+    private lateinit var crimeViewModel: CrimeViewModel
+
     private lateinit var mEmptyCrimesTextView: TextView
     private lateinit var mCrimeRecyclerView: RecyclerView
-    private lateinit var mAdapter: RecyclerView.Adapter<CrimeHolder>
+    private lateinit var mAdapter: CrimeAdapter
     private var mSubtitleVisible: Boolean = true
     private val SAVED_SUBTITLE_VISIBLE = "subtitle"
+    private var crimes: List<Crime> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,14 +39,21 @@ class CrimeListFragment: Fragment() {
         mCrimeRecyclerView = view.findViewById(R.id.crime_recycler_view)
         mCrimeRecyclerView.layoutManager = LinearLayoutManager(activity)
 
-        mAdapter = CrimeAdapter(CrimeLab.mCrimes)
+        mAdapter = CrimeAdapter()
         mCrimeRecyclerView.adapter = mAdapter
 
         if(savedInstanceState != null){
             mSubtitleVisible = savedInstanceState.getBoolean(SAVED_SUBTITLE_VISIBLE)
         }
 
-        updateUI()
+        crimeViewModel = ViewModelProvider(this).get(CrimeViewModel::class.java)
+        crimeViewModel.allWords.observe(this, Observer { words ->
+            words?.let {
+                this.crimes = it
+                mAdapter.setWords(this.crimes)
+                updateUI()
+            }
+        })
 
         return view
     }
@@ -63,10 +75,10 @@ class CrimeListFragment: Fragment() {
         return when(item.itemId){
             R.id.new_crime -> {
                 val crime = Crime()
-                crime.title = ""
-                CrimeLab.addCrime(crime)
-                val intent = CrimePagerActivity.newIntent(context!!, crime.id)
-                startActivity(intent)
+                crime.title = "Crime ${this.crimes.size+1}"
+                crimeViewModel.insert(crime)
+                //val intent = CrimePagerActivity.newIntent(context!!, UUID.fromString(crime.id))
+                //startActivity(intent)
                 true
             }
             R.id.show_subtitle  -> {
@@ -85,19 +97,18 @@ class CrimeListFragment: Fragment() {
     }
 
     private fun updateUI(){
-        mAdapter.notifyDataSetChanged()
-        updateSubtitle()
-        if(CrimeLab.mCrimes.any()) {
+        if(crimes.any()) {
             mEmptyCrimesTextView.visibility = View.GONE
             mCrimeRecyclerView.visibility = View.VISIBLE
         } else {
             mEmptyCrimesTextView.visibility = View.VISIBLE
             mCrimeRecyclerView.visibility = View.GONE
         }
+        updateSubtitle()
     }
 
     private fun updateSubtitle(){
-        val subtitle = if (mSubtitleVisible) resources.getQuantityString(R.plurals.subtitle_plural, CrimeLab.mCrimes.size, CrimeLab.mCrimes.size) else null
+        val subtitle = if (mSubtitleVisible) resources.getQuantityString(R.plurals.subtitle_plural, this.crimes.size, this.crimes.size) else null
         val activity = activity as CrimeListActivity
         activity.supportActionBar!!.subtitle = subtitle
     }
@@ -112,14 +123,16 @@ class CrimeListFragment: Fragment() {
             crimeDateView.text = DateFormat.format("EEEE, MMM dd, yyyy", crime.date)
             crimeSolvedView.visibility = if (crime.solved) View.VISIBLE else View.GONE
 
-            itemView.setOnClickListener {
-                val intent = CrimePagerActivity.newIntent(itemView.context, crime.id)
+            /*itemView.setOnClickListener {
+                val intent = CrimePagerActivity.newIntent(itemView.context, UUID.fromString(crime.id))
                 itemView.context.startActivity(intent)
-            }
+            }*/
         }
     }
 
-    private class CrimeAdapter(val mCrimes: List<Crime>) : RecyclerView.Adapter<CrimeHolder>(){
+    private class CrimeAdapter : RecyclerView.Adapter<CrimeHolder>(){
+
+        private var mCrimes = emptyList<Crime>()
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CrimeHolder {
             val layoutInflater = LayoutInflater.from(parent.context)
@@ -134,6 +147,12 @@ class CrimeListFragment: Fragment() {
         override fun getItemCount(): Int {
             return mCrimes.size
         }
+
+        internal fun setWords(words: List<Crime>) {
+            this.mCrimes = words
+            notifyDataSetChanged()
+        }
+
     }
 
 }
