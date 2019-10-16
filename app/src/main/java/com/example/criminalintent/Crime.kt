@@ -1,12 +1,17 @@
 package com.example.criminalintent
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.Ignore
+import androidx.room.PrimaryKey
 import java.util.*
 
-class Crime {
+@Entity(tableName = "crime_table")
+data class Crime(@PrimaryKey @ColumnInfo(name = "id") val id: String = UUID.randomUUID().toString()) {
 
-    val id: UUID = UUID.randomUUID()
-    var date: Date = Date()
-    lateinit var title: String
-    var solved: Boolean = false
+    //val id: UUID = UUID.randomUUID()
+    @Ignore var date: Date = Date()
+    @ColumnInfo(name = "title") var title: String? = null
+    @ColumnInfo(name = "solved") var solved: Boolean = false
 
 }

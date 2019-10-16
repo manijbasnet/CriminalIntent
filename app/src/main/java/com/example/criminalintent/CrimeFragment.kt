@@ -12,6 +12,7 @@ import android.widget.CheckBox
 import android.widget.EditText
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import java.util.*
 
 class CrimeFragment : Fragment() {
@@ -21,6 +22,8 @@ class CrimeFragment : Fragment() {
     private lateinit var mDateButton: Button
     private lateinit var mTimeButton: Button
     private lateinit var mSolvedCheckBox: CheckBox
+
+    private lateinit var crimeViewModel: CrimeViewModel
 
     companion object {
         const val ARG_CRIME_ID = "crime_id"
@@ -39,8 +42,10 @@ class CrimeFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        crimeViewModel = ViewModelProvider(this).get(CrimeViewModel::class.java)
+
         val crimeId = arguments?.getSerializable(ARG_CRIME_ID) as UUID
-        mCrime = CrimeLab.getCrime(crimeId) as Crime
+        //mCrime = CrimeLab.getCrime(crimeId) as Crime
         setHasOptionsMenu(true)
     }
 
@@ -50,6 +55,7 @@ class CrimeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val v = inflater.inflate(R.layout.fragment_crime, container, false)
+
 
         mTitleField = v.findViewById(R.id.crime_title)
         mTitleField.setText(mCrime.title)
@@ -99,7 +105,7 @@ class CrimeFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when(item.itemId){
           R.id.delete_crime -> {
-              CrimeLab.mCrimes.remove(mCrime)
+              //CrimeLab.mCrimes.remove(mCrime)
               activity!!.finish()
               true
           }

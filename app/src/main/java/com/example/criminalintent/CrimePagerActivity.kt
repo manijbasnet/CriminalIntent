@@ -3,8 +3,6 @@ package com.example.criminalintent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.view.ViewGroup
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -22,6 +20,7 @@ class CrimePagerActivity : AppCompatActivity() {
             intent.putExtra(EXTRA_CRIME_ID, crimeId)
             return intent
         }
+        private var crimes: List<Crime> = emptyList()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,12 +28,14 @@ class CrimePagerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_crime_pager)
 
         val viewPager = findViewById<ViewPager>(R.id.crime_view_pager)
-        viewPager.adapter = CrimePagerAdapter(supportFragmentManager)
+        val pagerAdapter = CrimePagerAdapter(supportFragmentManager)
+        pagerAdapter.setCrimes(crimes)
+        viewPager.adapter = pagerAdapter
 
         val crimeId = intent.getSerializableExtra(EXTRA_CRIME_ID)
-        for (i in 0..CrimeLab.mCrimes.size){
-            if (CrimeLab.mCrimes[i].id == crimeId){
-                viewPager.currentItem = i
+        for (i in 1..crimes.size){
+            if (crimes[i-1].id == crimeId){
+                viewPager.currentItem = i-1
                 break
             }
         }
@@ -47,21 +48,25 @@ class CrimePagerActivity : AppCompatActivity() {
         }
 
         lastItemButton.setOnClickListener {
-            viewPager.currentItem = CrimeLab.mCrimes.size
+            viewPager.currentItem = crimes.size
         }
     }
 
     private class CrimePagerAdapter(fragmentManager: FragmentManager) : FragmentStatePagerAdapter(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
-        private val mCrimes = CrimeLab.mCrimes
+        private var crimes = emptyList<Crime>()
 
         override fun getCount(): Int {
-            return mCrimes.size
+            return crimes.size
         }
 
         override fun getItem(position: Int): Fragment {
-            val crime = mCrimes[position]
-            return CrimeFragment.newInstance(crime.id)
+            val crime = crimes[position]
+            return CrimeFragment.newInstance(UUID.fromString(crime.id))
+        }
+
+        fun setCrimes(crimes: List<Crime>){
+            this.crimes = crimes
         }
     }
 
