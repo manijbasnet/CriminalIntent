@@ -3,6 +3,7 @@ package com.example.criminalintent
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.text.Editable
@@ -12,6 +13,7 @@ import android.view.*
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import androidx.core.app.ShareCompat
 import androidx.lifecycle.Observer
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -26,6 +28,8 @@ class CrimeFragment : Fragment() {
     private lateinit var mSolvedCheckBox: CheckBox
     private lateinit var mSuspectButton: Button
     private lateinit var mReportButton: Button
+    private lateinit var mSuspectCallButton: Button
+    private lateinit var suspectNumber: Uri
 
     private lateinit var crimeViewModel: CrimeViewModel
 
@@ -66,6 +70,11 @@ class CrimeFragment : Fragment() {
         mSolvedCheckBox.isChecked = mCrime.solved
         if(mCrime.suspect != null){
             mSuspectButton.text = mCrime.suspect
+            mSuspectCallButton.text = getString(R.string.crime_suspect_call, mCrime.suspect)
+            mSuspectCallButton.isEnabled = true
+        } else {
+            mSuspectCallButton.isEnabled = false
+            mSuspectCallButton.text = getString(R.string.crime_suspect_call, "Suspect")
         }
         updateDate()
         updateTime()
@@ -112,11 +121,13 @@ class CrimeFragment : Fragment() {
 
         mReportButton = v.findViewById(R.id.crime_report)
         mReportButton.setOnClickListener {
-            var intent = Intent(Intent.ACTION_SEND)
-            intent.type = "text/plain"
-            intent.putExtra(Intent.EXTRA_TEXT, getCrimeReport())
-            intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject))
-            intent =  Intent.createChooser(intent, getString(R.string.send_report))
+            val intent = ShareCompat.IntentBuilder
+                .from(activity)
+                .setType("text/plain")
+                .setSubject(getString(R.string.crime_report_subject))
+                .setText(getCrimeReport())
+                .setChooserTitle(getString(R.string.send_report))
+                .createChooserIntent()
             startActivity(intent)
         }
 
@@ -128,6 +139,14 @@ class CrimeFragment : Fragment() {
         val packageManager = activity?.packageManager
         if(packageManager?.resolveActivity(pickContact, PackageManager.MATCH_DEFAULT_ONLY) == null){
             mSuspectButton.isEnabled = false
+        }
+
+        mSuspectCallButton = v.findViewById(R.id.crime_suspect_call)
+        mSuspectCallButton.isEnabled = false
+        mSuspectCallButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_CALL, suspectNumber)
+            val chooser= Intent.createChooser(intent,"title")
+            startActivity(chooser)
         }
 
         return v
@@ -176,13 +195,22 @@ class CrimeFragment : Fragment() {
 
         if(requestCode == REQUEST_CONTACT && data != null){
             val contactUri = data.data!!
-            val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+            val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID)
             val cursor = activity!!.contentResolver.query(contactUri, queryFields, null, null, null)
             cursor?.use {
                 if(cursor.count == 0){ return }
                 cursor.moveToFirst()
                 mCrime.suspect = cursor.getString(0)
+                val id = cursor.getString(1)
                 mSuspectButton.text = mCrime.suspect
+
+                val phones = activity!!.contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = "+ id,null, null)
+                while (phones!!.moveToNext()){
+                    suspectNumber = Uri.parse(phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)))
+                }
+
+                mSuspectCallButton.text = getString(R.string.crime_suspect_call, mCrime.suspect)
+                mSuspectCallButton.isEnabled = true
             }
         }
     }
