@@ -77,8 +77,8 @@ class CrimeListFragment: Fragment() {
                 val crime = Crime()
                 crime.title = "Crime ${this.crimes.size+1}"
                 crimeViewModel.insert(crime)
-                //val intent = CrimePagerActivity.newIntent(context!!, UUID.fromString(crime.id))
-                //startActivity(intent)
+                val intent = CrimePagerActivity.newIntent(context!!, crime.id, 0)
+                startActivity(intent)
                 true
             }
             R.id.show_subtitle  -> {
@@ -115,7 +115,7 @@ class CrimeListFragment: Fragment() {
 
     private class CrimeHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        fun bindItems(crime: Crime){
+        fun bindItems(crime: Crime, position: Int){
             val crimeTitleView = itemView.findViewById<TextView>(R.id.crime_title)
             val crimeDateView = itemView.findViewById<TextView>(R.id.crime_date)
             val crimeSolvedView = itemView.findViewById<ImageView>(R.id.crime_solved)
@@ -123,10 +123,10 @@ class CrimeListFragment: Fragment() {
             crimeDateView.text = DateFormat.format("EEEE, MMM dd, yyyy", crime.date)
             crimeSolvedView.visibility = if (crime.solved) View.VISIBLE else View.GONE
 
-            /*itemView.setOnClickListener {
-                val intent = CrimePagerActivity.newIntent(itemView.context, UUID.fromString(crime.id))
+            itemView.setOnClickListener {
+                val intent = CrimePagerActivity.newIntent(itemView.context, crime.id, position)
                 itemView.context.startActivity(intent)
-            }*/
+            }
         }
     }
 
@@ -141,7 +141,7 @@ class CrimeListFragment: Fragment() {
         }
 
         override fun onBindViewHolder(holder: CrimeHolder, position: Int) {
-            holder.bindItems(mCrimes[position])
+            holder.bindItems(mCrimes[position], position)
         }
 
         override fun getItemCount(): Int {
