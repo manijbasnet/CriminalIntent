@@ -120,7 +120,7 @@ class CrimeListFragment: Fragment() {
             val crimeDateView = itemView.findViewById<TextView>(R.id.crime_date)
             val crimeSolvedView = itemView.findViewById<ImageView>(R.id.crime_solved)
             crimeTitleView.text = crime.title
-            crimeDateView.text = DateFormat.format("EEEE, MMM dd, yyyy", crime.date)
+            crimeDateView.text = DateFormat.format("EEE, MMM dd, yyyy hh:mm a", crime.date)
             crimeSolvedView.visibility = if (crime.solved) View.VISIBLE else View.GONE
 
             itemView.setOnClickListener {
@@ -132,7 +132,7 @@ class CrimeListFragment: Fragment() {
 
     private class CrimeAdapter : RecyclerView.Adapter<CrimeHolder>(){
 
-        private var mCrimes = emptyList<Crime>()
+        private var crimes = emptyList<Crime>()
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CrimeHolder {
             val layoutInflater = LayoutInflater.from(parent.context)
@@ -141,15 +141,15 @@ class CrimeListFragment: Fragment() {
         }
 
         override fun onBindViewHolder(holder: CrimeHolder, position: Int) {
-            holder.bindItems(mCrimes[position], position)
+            holder.bindItems(crimes[position], position)
         }
 
         override fun getItemCount(): Int {
-            return mCrimes.size
+            return crimes.size
         }
 
         internal fun setWords(words: List<Crime>) {
-            this.mCrimes = words
+            this.crimes = words
             notifyDataSetChanged()
         }
 

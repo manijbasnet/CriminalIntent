@@ -4,11 +4,14 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.util.*
 
 @Database(entities = [Crime::class], version = 1)
+@TypeConverters(com.example.criminalintent.TypeConverters::class)
 abstract class CrimeRoomDatabase: RoomDatabase() {
     abstract fun crimeDao(): CrimeDao
 
@@ -25,8 +28,13 @@ abstract class CrimeRoomDatabase: RoomDatabase() {
                     // Delete all content here.
                     crimeDao.deleteAll()
 
+                    val calendar = GregorianCalendar()
+                    calendar.set(2019,1,15,5,30,15)
+
                     var crime = Crime("crime1")
                     crime.title = "Crime 1"
+                    crime.date = calendar.time
+                    crime.solved = true
                     crimeDao.insert(crime)
 
                     crime = Crime("crime2")
@@ -35,6 +43,7 @@ abstract class CrimeRoomDatabase: RoomDatabase() {
 
                     crime = Crime("crime3")
                     crime.title = "Crime 3"
+                    crime.solved = true
                     crimeDao.insert(crime)
 
                     crime = Crime("crime4")
