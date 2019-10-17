@@ -25,16 +25,20 @@ abstract class CrimeRoomDatabase: RoomDatabase() {
                     // Delete all content here.
                     crimeDao.deleteAll()
 
-                    var crime = Crime()
+                    var crime = Crime("crime1")
                     crime.title = "Crime 1"
                     crimeDao.insert(crime)
 
-                    crime = Crime()
+                    crime = Crime("crime2")
                     crime.title = "Crime 2"
                     crimeDao.insert(crime)
 
-                    crime = Crime()
+                    crime = Crime("crime3")
                     crime.title = "Crime 3"
+                    crimeDao.insert(crime)
+
+                    crime = Crime("crime4")
+                    crime.title = "Crime 4"
                     crimeDao.insert(crime)
                 }
             }

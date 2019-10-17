@@ -5,19 +5,26 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
-import java.util.*
 
 class CrimePagerActivity : AppCompatActivity() {
 
+    private lateinit var crimeViewModel: CrimeViewModel
+    private lateinit var crimeId: String
+    private var crimePosition: Int = 0
+
     companion object {
         private const val EXTRA_CRIME_ID = "com.bignerdranch.android.criminalIntent.crime_id"
-        fun newIntent(packageContent: Context, crimeId: UUID): Intent {
+        private const val EXTRA_CRIME_POSITION = "com.bignerdranch.android.criminalIntent.crime_position"
+        fun newIntent(packageContent: Context, crimeId: String, position: Int): Intent {
             val intent = Intent(packageContent, CrimePagerActivity::class.java)
             intent.putExtra(EXTRA_CRIME_ID, crimeId)
+            intent.putExtra(EXTRA_CRIME_POSITION, position)
             return intent
         }
         private var crimes: List<Crime> = emptyList()
@@ -29,16 +36,19 @@ class CrimePagerActivity : AppCompatActivity() {
 
         val viewPager = findViewById<ViewPager>(R.id.crime_view_pager)
         val pagerAdapter = CrimePagerAdapter(supportFragmentManager)
-        pagerAdapter.setCrimes(crimes)
+
+        crimeViewModel = ViewModelProvider(this).get(CrimeViewModel::class.java)
+        crimeViewModel.allWords.observe(this, Observer { crimes ->
+            crimes?.let {
+                pagerAdapter.setCrimes(crimes)
+                viewPager.currentItem = crimePosition
+            }
+        })
+
         viewPager.adapter = pagerAdapter
 
-        val crimeId = intent.getSerializableExtra(EXTRA_CRIME_ID)
-        for (i in 1..crimes.size){
-            if (crimes[i-1].id == crimeId){
-                viewPager.currentItem = i-1
-                break
-            }
-        }
+        crimeId = intent.getStringExtra(EXTRA_CRIME_ID)!!
+        crimePosition = intent.getIntExtra(EXTRA_CRIME_POSITION, 0)
 
         val firstItemButton = findViewById<Button>(R.id.first_item)
         val lastItemButton = findViewById<Button>(R.id.last_item)
@@ -62,11 +72,12 @@ class CrimePagerActivity : AppCompatActivity() {
 
         override fun getItem(position: Int): Fragment {
             val crime = crimes[position]
-            return CrimeFragment.newInstance(UUID.fromString(crime.id))
+            return CrimeFragment.newInstance(crime.id)
         }
 
         fun setCrimes(crimes: List<Crime>){
             this.crimes = crimes
+            notifyDataSetChanged()
         }
     }
 

@@ -10,14 +10,14 @@ import android.view.*
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
-import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Observer
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import java.util.*
 
 class CrimeFragment : Fragment() {
 
-    private lateinit var mCrime: Crime
+    private var mCrime: Crime = Crime()
     private lateinit var mTitleField: EditText
     private lateinit var mDateButton: Button
     private lateinit var mTimeButton: Button
@@ -31,9 +31,9 @@ class CrimeFragment : Fragment() {
         const val DIALOG_TIME = "DialogTime"
         const val REQUEST_DATE = 0
         const val REQUEST_TIME = 1
-        fun newInstance(crimeId: UUID): CrimeFragment {
+        fun newInstance(crimeId: String): CrimeFragment {
             val args = Bundle()
-            args.putSerializable(ARG_CRIME_ID, crimeId)
+            args.putString(ARG_CRIME_ID, crimeId)
             val fragment = CrimeFragment()
             fragment.arguments = args
             return fragment
@@ -44,9 +44,22 @@ class CrimeFragment : Fragment() {
         super.onCreate(savedInstanceState)
         crimeViewModel = ViewModelProvider(this).get(CrimeViewModel::class.java)
 
-        val crimeId = arguments?.getSerializable(ARG_CRIME_ID) as UUID
-        //mCrime = CrimeLab.getCrime(crimeId) as Crime
+        val crimeId = arguments?.getString(ARG_CRIME_ID)
+
+        crimeViewModel.get(crimeId!!).observe(this, Observer { crime ->
+            crime?.let {
+                mCrime = crime
+                updateUI()
+            }
+        })
         setHasOptionsMenu(true)
+    }
+
+    private fun updateUI(){
+        mTitleField.setText(mCrime.title)
+        mSolvedCheckBox.isChecked = mCrime.solved
+        updateDate()
+        updateTime()
     }
 
     override fun onCreateView(
@@ -55,10 +68,7 @@ class CrimeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val v = inflater.inflate(R.layout.fragment_crime, container, false)
-
-
         mTitleField = v.findViewById(R.id.crime_title)
-        mTitleField.setText(mCrime.title)
         mTitleField.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             }
@@ -72,26 +82,23 @@ class CrimeFragment : Fragment() {
         })
 
         mDateButton = v.findViewById(R.id.crime_date)
-        updateDate()
         mDateButton.setOnClickListener {
             val dialogFragment = DatePickerFragment.newInstance(mCrime.date)
             dialogFragment.setTargetFragment(this, REQUEST_DATE)
-            dialogFragment.show(fragmentManager!!, DIALOG_DATE)
+            dialogFragment.show(parentFragmentManager, DIALOG_DATE)
         }
 
         mSolvedCheckBox = v.findViewById(R.id.crime_solved)
-        mSolvedCheckBox.isChecked = mCrime.solved
         mSolvedCheckBox.setOnCheckedChangeListener { _, isChecked ->
             mCrime.solved = isChecked
         }
 
 
         mTimeButton = v.findViewById(R.id.crime_time)
-        updateTime()
         mTimeButton.setOnClickListener {
             val timeFragment = TimePickerFragment.newInstance(mCrime.date)
             timeFragment.setTargetFragment(this, REQUEST_TIME)
-            timeFragment.show(fragmentManager!!,  DIALOG_TIME)
+            timeFragment.show(parentFragmentManager,  DIALOG_TIME)
         }
 
         return v
