@@ -17,7 +17,7 @@ import java.util.*
 
 class CrimeFragment : Fragment() {
 
-    private lateinit var mCrime: Crime
+    private var mCrime: Crime = Crime()
     private lateinit var mTitleField: EditText
     private lateinit var mDateButton: Button
     private lateinit var mTimeButton: Button
@@ -55,7 +55,7 @@ class CrimeFragment : Fragment() {
         setHasOptionsMenu(true)
     }
 
-    fun updateUI(){
+    private fun updateUI(){
         mTitleField.setText(mCrime.title)
         mSolvedCheckBox.isChecked = mCrime.solved
         updateDate()
@@ -68,8 +68,6 @@ class CrimeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val v = inflater.inflate(R.layout.fragment_crime, container, false)
-
-
         mTitleField = v.findViewById(R.id.crime_title)
         mTitleField.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -87,7 +85,7 @@ class CrimeFragment : Fragment() {
         mDateButton.setOnClickListener {
             val dialogFragment = DatePickerFragment.newInstance(mCrime.date)
             dialogFragment.setTargetFragment(this, REQUEST_DATE)
-            dialogFragment.show(fragmentManager!!, DIALOG_DATE)
+            dialogFragment.show(parentFragmentManager, DIALOG_DATE)
         }
 
         mSolvedCheckBox = v.findViewById(R.id.crime_solved)
@@ -100,7 +98,7 @@ class CrimeFragment : Fragment() {
         mTimeButton.setOnClickListener {
             val timeFragment = TimePickerFragment.newInstance(mCrime.date)
             timeFragment.setTargetFragment(this, REQUEST_TIME)
-            timeFragment.show(fragmentManager!!,  DIALOG_TIME)
+            timeFragment.show(parentFragmentManager,  DIALOG_TIME)
         }
 
         return v

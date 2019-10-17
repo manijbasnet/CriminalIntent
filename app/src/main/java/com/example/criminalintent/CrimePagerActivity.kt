@@ -40,8 +40,8 @@ class CrimePagerActivity : AppCompatActivity() {
         crimeViewModel = ViewModelProvider(this).get(CrimeViewModel::class.java)
         crimeViewModel.allWords.observe(this, Observer { crimes ->
             crimes?.let {
-                viewPager.currentItem = crimePosition
                 pagerAdapter.setCrimes(crimes)
+                viewPager.currentItem = crimePosition
             }
         })
 
