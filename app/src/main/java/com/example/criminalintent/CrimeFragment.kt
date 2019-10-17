@@ -2,7 +2,9 @@ package com.example.criminalintent
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateFormat
@@ -22,6 +24,8 @@ class CrimeFragment : Fragment() {
     private lateinit var mDateButton: Button
     private lateinit var mTimeButton: Button
     private lateinit var mSolvedCheckBox: CheckBox
+    private lateinit var mSuspectButton: Button
+    private lateinit var mReportButton: Button
 
     private lateinit var crimeViewModel: CrimeViewModel
 
@@ -31,6 +35,7 @@ class CrimeFragment : Fragment() {
         const val DIALOG_TIME = "DialogTime"
         const val REQUEST_DATE = 0
         const val REQUEST_TIME = 1
+        const val REQUEST_CONTACT = 2
         fun newInstance(crimeId: String): CrimeFragment {
             val args = Bundle()
             args.putString(ARG_CRIME_ID, crimeId)
@@ -38,6 +43,7 @@ class CrimeFragment : Fragment() {
             fragment.arguments = args
             return fragment
         }
+        val pickContact = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,6 +64,9 @@ class CrimeFragment : Fragment() {
     private fun updateUI(){
         mTitleField.setText(mCrime.title)
         mSolvedCheckBox.isChecked = mCrime.solved
+        if(mCrime.suspect != null){
+            mSuspectButton.text = mCrime.suspect
+        }
         updateDate()
         updateTime()
     }
@@ -99,6 +108,26 @@ class CrimeFragment : Fragment() {
             val timeFragment = TimePickerFragment.newInstance(mCrime.date)
             timeFragment.setTargetFragment(this, REQUEST_TIME)
             timeFragment.show(parentFragmentManager,  DIALOG_TIME)
+        }
+
+        mReportButton = v.findViewById(R.id.crime_report)
+        mReportButton.setOnClickListener {
+            var intent = Intent(Intent.ACTION_SEND)
+            intent.type = "text/plain"
+            intent.putExtra(Intent.EXTRA_TEXT, getCrimeReport())
+            intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject))
+            intent =  Intent.createChooser(intent, getString(R.string.send_report))
+            startActivity(intent)
+        }
+
+        mSuspectButton = v.findViewById(R.id.crime_suspect)
+        mSuspectButton.setOnClickListener {
+            startActivityForResult(pickContact, REQUEST_CONTACT)
+        }
+
+        val packageManager = activity?.packageManager
+        if(packageManager?.resolveActivity(pickContact, PackageManager.MATCH_DEFAULT_ONLY) == null){
+            mSuspectButton.isEnabled = false
         }
 
         return v
@@ -144,6 +173,25 @@ class CrimeFragment : Fragment() {
             mCrime.date = date
             updateTime()
         }
+
+        if(requestCode == REQUEST_CONTACT && data != null){
+            val contactUri = data.data!!
+            val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+            val cursor = activity!!.contentResolver.query(contactUri, queryFields, null, null, null)
+            cursor?.use {
+                if(cursor.count == 0){ return }
+                cursor.moveToFirst()
+                mCrime.suspect = cursor.getString(0)
+                mSuspectButton.text = mCrime.suspect
+            }
+        }
     }
 
+    private fun getCrimeReport(): String{
+        val solvedString = getString(if (mCrime.solved) R.string.crime_report_solved else R.string.crime_report_unsolved)
+        val dateFormat = "EEE, MMM dd"
+        val dateString = DateFormat.format(dateFormat, mCrime.date)
+        val suspect = if (mCrime.suspect == null) getString(R.string.crime_report_no_suspect) else  getString(R.string.crime_report_suspect, mCrime.suspect)
+        return getString(R.string.crime_report, mCrime.title, dateString, solvedString, suspect)
+    }
 }

@@ -12,5 +12,6 @@ data class Crime(@PrimaryKey @ColumnInfo(name = "id") val id: String = UUID.rand
     @ColumnInfo(name = "date") var date: Date = Date()
     @ColumnInfo(name = "title") var title: String? = null
     @ColumnInfo(name = "solved") var solved: Boolean = false
+    @ColumnInfo(name = "suspect") var suspect: String? = null
 
 }
