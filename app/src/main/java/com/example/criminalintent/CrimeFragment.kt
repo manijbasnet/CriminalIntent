@@ -144,7 +144,7 @@ class CrimeFragment : Fragment() {
         mSuspectCallButton = v.findViewById(R.id.crime_suspect_call)
         mSuspectCallButton.isEnabled = false
         mSuspectCallButton.setOnClickListener {
-            val intent = Intent(Intent.ACTION_CALL, suspectNumber)
+            val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:${suspectNumber}"))
             val chooser= Intent.createChooser(intent,"title")
             startActivity(chooser)
         }
